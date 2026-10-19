@@ -134,20 +134,10 @@
           <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="containers">🚢 コンテナ / Kubernetes</button>
           <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="automation">⚙️ 自動化（Ansible）</button>
           <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="cloud-native">☁️ クラウドネイティブ</button>
+          <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="virtualization">🖥️ 仮想化</button>
+          <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="ai">🤖 AI</button>
+          <button class="btn btn-sm btn-outline-dark purpose-btn" data-purpose="security">🔒 セキュリティ</button>
           <button class="btn btn-sm btn-outline-secondary purpose-btn" data-purpose="">すべて</button>
-        </div>
-      </div>
-
-      <!-- Category -->
-      <div class="mb-3">
-        <span class="filter-label">Category</span>
-        <div class="d-flex flex-wrap gap-2">
-          <button class="btn btn-sm category-btn btn-secondary"       data-value="" data-color="secondary">All</button>
-          <button class="btn btn-sm category-btn btn-outline-danger"  data-value="RHEL"         data-color="danger">RHEL</button>
-          <button class="btn btn-sm category-btn btn-outline-warning" data-value="Ansible"      data-color="warning">Ansible</button>
-          <button class="btn btn-sm category-btn btn-outline-primary" data-value="OpenShift"    data-color="primary">OpenShift</button>
-          <button class="btn btn-sm category-btn btn-outline-success" data-value="Cloud-Native" data-color="success">Cloud-Native</button>
-          <button class="btn btn-sm category-btn btn-outline-info" data-value="AI" data-color="info">AI</button>
         </div>
       </div>
 
@@ -196,6 +186,9 @@
             <button class="btn btn-outline-dark view-btn" data-view="roadmap">ロードマップ</button>
           </div>
         </div>
+        <div class="col-auto d-flex align-items-end">
+          <button class="btn btn-sm btn-danger fw-semibold" id="resetFilters">🧹 フィルターをリセット</button>
+        </div>
         <div class="col-auto ms-auto d-flex align-items-end pb-1">
           <span class="text-muted small" id="resultCount"></span>
         </div>
@@ -220,7 +213,6 @@
   <script>
     let allCertifications = [];
     let filteredCertifications = [];
-    let selectedCategory = "";
     let selectedLevel = "";
     let selectedPurpose = "";
     let viewMode = "grid";
@@ -269,10 +261,14 @@
       const text = `${cert.title} ${cert.product || ""} ${cert.category || ""} ${(cert.tags || []).join(" ")}`.toLowerCase();
       const purposeTerms = {
         linux: ["rhel", "linux", "system", "satellite", "管理", "運用"],
-        containers: ["container", "openshift", "kubernetes", "コンテナ", "仮想化"],
+        containers: ["container", "openshift", "kubernetes", "コンテナ"],
         automation: ["ansible", "automation", "自動化"],
-        "cloud-native": ["cloud-native", "cloud native", "quarkus", "microservice", "container", "クラウドネイティブ"]
+        "cloud-native": ["cloud-native", "cloud native", "quarkus", "microservice", "container", "クラウドネイティブ"],
+        virtualization: ["virtualization", "仮想化"],
+        ai: ["ai/ml", "openshift ai"],
+        security: ["security", "セキュリティ"]
       };
+      if (selectedPurpose === "ai" && (cert.category === "AI" || /\bai\b/i.test(cert.title))) return true;
       return (purposeTerms[selectedPurpose] || []).some(term => text.includes(term));
     }
 
@@ -406,11 +402,10 @@
       const sortOrder     = document.getElementById("sortOrder").value;
 
       filteredCertifications = allCertifications.filter(cert => {
-        const categoryMatch = !selectedCategory || cert.category === selectedCategory;
         const levelMatch    = !selectedLevel    || cert.level    === selectedLevel;
         const productMatch  = !productFilter    || (cert.product || "") === productFilter;
         const trackMatch    = !trackFilter     || getTrackMatches(cert.exam).some(match => match.track.id === trackFilter);
-        return categoryMatch && levelMatch && productMatch && trackMatch && matchesPurpose(cert);
+        return levelMatch && productMatch && trackMatch && matchesPurpose(cert);
       });
 
       filteredCertifications.sort((a, b) => {
@@ -431,16 +426,6 @@
       updateResultCount();
     }
 
-    function setCategoryFilter(value) {
-      selectedCategory = value;
-      document.querySelectorAll(".category-btn").forEach(btn => {
-        const color    = btn.dataset.color;
-        const isActive = btn.dataset.value === value;
-        btn.className  = `btn btn-sm category-btn ${isActive ? `btn-${color}` : `btn-outline-${color}`}`;
-      });
-      applyFiltersAndSort();
-    }
-
     function setLevelFilter(value) {
       selectedLevel = value;
       document.querySelectorAll(".level-btn").forEach(btn => {
@@ -458,6 +443,17 @@
         btn.classList.toggle("btn-outline-dark", !isActive && btn.dataset.purpose !== "");
       });
       applyFiltersAndSort();
+    }
+
+    function resetFilters() {
+      selectedTrack = "";
+      document.getElementById("filterProduct").value = "";
+      document.getElementById("filterTrack").value = "";
+      document.getElementById("sortOrder").value = "asc";
+      document.getElementById("showRetired").checked = false;
+      setLevelFilter("");
+      setPurposeFilter("");
+      if (viewMode === "roadmap") renderRoadmap();
     }
 
     function renderRoadmap() {
@@ -551,8 +547,6 @@
         populateTrackFilter();
         applyFiltersAndSort();
 
-        document.querySelectorAll(".category-btn").forEach(btn =>
-          btn.addEventListener("click", () => setCategoryFilter(btn.dataset.value)));
         document.querySelectorAll(".level-btn").forEach(btn =>
           btn.addEventListener("click", () => setLevelFilter(btn.dataset.value)));
         document.querySelectorAll(".purpose-btn").forEach(btn =>
@@ -571,6 +565,7 @@
         document.getElementById("certModal").addEventListener("click", event => {
           if (event.target.id === "certModal") closeCertification();
         });
+        document.getElementById("resetFilters").addEventListener("click", resetFilters);
         document.getElementById("showRetired").addEventListener("change", applyRetiredFilter);
         document.getElementById("filterProduct").addEventListener("change", applyFiltersAndSort);
         document.getElementById("filterTrack").addEventListener("change", event => {
