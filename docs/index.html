@@ -27,6 +27,8 @@
     .social-tag-track { color: #0d6efd; }
     .social-tag-step { color: #6c757d; }
     .social-tag-prerequisite { color: #b02a37; }
+    .social-tag-training { color: #198754; }
+    .training-code { display: inline-block; align-self: flex-start; background: #198754; color: #fff; font-family: monospace; font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; padding: 0.15rem 0.6rem; border-radius: 6px; }
     .social-tag-status { color: #198754; }
     .social-tag-status.retired { color: #b02a37; }
     .card-top-panel { position: relative; background: #151515; color: #fff; border-left: 5px solid #ee0000; margin: -1rem -1rem 1rem; padding: 1rem 170px 1rem 1rem; min-height: 230px; }
@@ -38,6 +40,7 @@
     .card-top-panel .social-tag-product,
     .card-top-panel .social-tag-step { color: #d2d2d2; }
     .card-top-panel .social-tag-status { color: #75b798; }
+    .card-top-panel .social-tag-training { color: #75d99f; }
     .card-top-panel .social-tag-status.retired,
     .card-top-panel .social-tag-category,
     .card-top-panel .social-tag-prerequisite { color: #ff8a8a; }
@@ -355,6 +358,7 @@
               <!-- Hashtags -->
               <div class="social-tags mb-2">
                 <span class="social-tag social-tag-exam">#${cert.exam}</span>
+                ${cert.training_course ? `<span class="social-tag social-tag-training">#${cert.training_course}</span>` : ""}
                 ${cert.level ? `<span class="social-tag social-tag-level-${getLevelNumber(cert.level)}">#${cert.level.replace("Level ", "")} · ${levelInfo.label}</span>` : ""}
                 ${displayTopics.map(topic => `<span class="social-tag ${topic.className}">#${topic.value.replace(/[\s/]+/g, "_")}</span>`).join("")}
                 ${step ? `<span class="social-tag social-tag-step">#Step${step}</span>` : ""}
@@ -377,7 +381,7 @@
                 <div class="col-6 ps-2 d-flex flex-column gap-1">
                   <div class="small fw-semibold text-muted mb-1">🎓 トレーニング</div>
                   ${cert.training_course ? `
-                    <div class="small text-muted"><strong>${cert.training_course}</strong></div>
+                    <span class="training-code">${cert.training_course}</span>
                     ${cert.training_course_name ? `<div class="small text-muted" style="font-size:0.72rem;line-height:1.3">${cert.training_course_name}</div>` : ""}
                     <div class="d-flex gap-1 flex-wrap mt-auto">
                       ${cert.training_url_en ? `<a href="${cert.training_url_en}" class="btn btn-sm btn-success resource-link" target="_blank">コース詳細: English ↗</a>` : ""}
